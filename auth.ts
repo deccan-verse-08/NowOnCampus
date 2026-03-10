@@ -17,6 +17,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     providers: [
         Passkey({
+            relayingParty: {
+                name: "NowOnCampus",
+                id: (() => {
+                    const url = process.env.NEXTAUTH_URL || "http://localhost:3000";
+                    return url.replace(/^https?:\/\//, "").split(":")[0];
+                })(),
+            },
             formFields: {
                 email: { label: "Email", required: true, autocomplete: "username webauthn" },
             },
