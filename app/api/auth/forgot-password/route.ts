@@ -14,7 +14,7 @@ export async function POST(request: Request) {
         const user = await prisma.user.findUnique({ where: { email } });
 
         // Always return success to prevent email enumeration attacks
-        if (!user || !user.password) {
+        if (!user) {
             return NextResponse.json({ message: "If this email exists, a reset link has been sent." });
         }
 
@@ -31,7 +31,12 @@ export async function POST(request: Request) {
             data: { identifier: email, token, expires },
         });
 
-        await sendPasswordResetEmail(email, user.name || "there", token);
+        // Non-fatal: token is already saved; user can retry if mail fails
+        try {
+            await sendPasswordResetEmail(email, user.name || "there", token);
+        } catch (mailError) {
+            console.error("Password reset email failed (non-fatal):", mailError);
+        }
 
         return NextResponse.json({ message: "If this email exists, a reset link has been sent." });
     } catch (error) {

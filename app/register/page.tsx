@@ -59,10 +59,8 @@ export default function RegisterPage() {
             if (!res.ok) {
                 setError(data.error || "Registration failed. Please try again.");
             } else {
-                setSuccess("Account created! Signing you in...");
-                await signIn("credentials", { email, password, redirect: false });
-                router.push("/");
-                router.refresh();
+                setSuccess("Account created! Redirecting to sign in...");
+                setTimeout(() => router.push("/login"), 1500);
             }
         } catch {
             setError("Something went wrong. Please try again.");

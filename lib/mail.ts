@@ -1,11 +1,22 @@
 import nodemailer from "nodemailer";
 
+const getBaseUrl = () => {
+  if (process.env.AUTH_URL) return process.env.AUTH_URL;
+  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
+};
+
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // STARTTLS on port 587
   auth: {
     user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
+    pass: (process.env.GMAIL_PASS || "").replace(/\s/g, ""), // strip spaces from app password
   },
+  connectionTimeout: 10000, // 10s
+  greetingTimeout: 10000,
 });
 
 // ── Event Registration Confirmation ──────────────────────────────────────────
@@ -50,7 +61,7 @@ export async function sendEventConfirmationEmail(
   event: EventDetails
 ) {
   const emoji = categoryEmoji[event.category] || "📋";
-  const eventUrl = `${process.env.NEXTAUTH_URL}/events`;
+  const eventUrl = `${getBaseUrl()}/events`;
 
   const html = `
   <!DOCTYPE html>
@@ -181,7 +192,7 @@ export async function sendEventConfirmationEmail(
 // ── Password Reset Email ──────────────────────────────────────────────────────
 
 export async function sendPasswordResetEmail(userEmail: string, userName: string, resetToken: string) {
-  const resetUrl = `${process.env.NEXTAUTH_URL}/reset-password?token=${resetToken}`;
+  const resetUrl = `${getBaseUrl()}/reset-password?token=${resetToken}`;
 
   const html = `
   <!DOCTYPE html>
@@ -247,6 +258,89 @@ export async function sendPasswordResetEmail(userEmail: string, userName: string
     from: process.env.EMAIL_FROM || process.env.GMAIL_USER,
     to: userEmail,
     subject: "🔐 Reset your NowOnCampus password",
+    html,
+  });
+}
+
+// ── Welcome Email ─────────────────────────────────────────────────────────────
+
+export async function sendWelcomeEmail(userEmail: string, userName: string) {
+  const eventsUrl = `${process.env.NEXTAUTH_URL}/events`;
+
+  const html = `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head><meta charset="UTF-8" /><title>Welcome to NowOnCampus</title></head>
+  <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 16px;">
+      <tr><td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+          <!-- Header -->
+          <tr><td style="background:linear-gradient(135deg,#1d4ed8,#2563eb);border-radius:16px 16px 0 0;padding:36px 32px;text-align:center;">
+            <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:16px;">
+              <span style="background:white;border-radius:12px;padding:8px 12px;font-size:22px;font-weight:900;color:#1d4ed8;">NOC</span>
+              <span style="color:white;font-size:20px;font-weight:700;">NowOnCampus</span>
+            </div>
+            <div style="font-size:48px;margin:8px 0;">🎓</div>
+            <h1 style="color:white;font-size:26px;font-weight:800;margin:0 0 8px;">Welcome aboard!</h1>
+            <p style="color:#bfdbfe;font-size:15px;margin:0;">Your account has been created successfully.</p>
+          </td></tr>
+
+          <!-- Body -->
+          <tr><td style="background:white;padding:32px;">
+            <p style="color:#374151;font-size:16px;margin:0 0 16px;">Hi <strong>${userName}</strong>,</p>
+            <p style="color:#374151;font-size:15px;margin:0 0 24px;">
+              Welcome to <strong>NowOnCampus</strong>! We're excited to have you on board. 🎉<br>
+              You can now discover and register for events happening on campus — all in one place.
+            </p>
+
+            <!-- Feature highlights -->
+            <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:12px;padding:24px;margin-bottom:24px;">
+              <h2 style="color:#1e40af;font-size:16px;font-weight:700;margin:0 0 16px;">Here's what you can do:</h2>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr><td style="padding:8px 0;border-bottom:1px solid #dbeafe;">
+                  <span style="color:#1e3a8a;font-size:14px;">📅 <strong>Browse Events</strong> — Discover upcoming hackathons, workshops, cultural fests &amp; more</span>
+                </td></tr>
+                <tr><td style="padding:8px 0;border-bottom:1px solid #dbeafe;">
+                  <span style="color:#1e3a8a;font-size:14px;">✅ <strong>Register Instantly</strong> — Secure your spot with one click</span>
+                </td></tr>
+                <tr><td style="padding:8px 0;">
+                  <span style="color:#1e3a8a;font-size:14px;">🔔 <strong>Stay Updated</strong> — Get confirmation emails for every event you join</span>
+                </td></tr>
+              </table>
+            </div>
+
+            <!-- CTA -->
+            <div style="text-align:center;margin-bottom:24px;">
+              <a href="${eventsUrl}" style="display:inline-block;background:#2563eb;color:white;font-size:15px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:10px;">
+                Explore Events →
+              </a>
+            </div>
+
+            <p style="color:#6b7280;font-size:13px;margin:0;">
+              If you didn't create this account, you can safely ignore this email.
+            </p>
+          </td></tr>
+
+          <!-- Footer -->
+          <tr><td style="background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 16px 16px;padding:20px 32px;text-align:center;">
+            <p style="color:#94a3b8;font-size:12px;margin:0;">
+              &copy; 2025 NowOnCampus. All rights reserved.<br>
+              This is an automated message. Please do not reply.
+            </p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+  </html>
+  `;
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || process.env.GMAIL_USER,
+    to: userEmail,
+    subject: "🎓 Welcome to NowOnCampus!",
     html,
   });
 }

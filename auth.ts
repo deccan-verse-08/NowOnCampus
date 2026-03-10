@@ -76,4 +76,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return session;
         },
     },
+    events: {
+        async createUser({ user }) {
+            // Dynamic import keeps nodemailer out of the client bundle (server-runtime only)
+            if (user.email) {
+                try {
+                    const { sendWelcomeEmail } = await import("@/lib/mail");
+                    await sendWelcomeEmail(user.email, user.name || "Student");
+                } catch (mailError) {
+                    console.error("Welcome email failed for new Google user (non-fatal):", mailError);
+                }
+            }
+        },
+    },
 });

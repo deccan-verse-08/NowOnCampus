@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
+import { sendWelcomeEmail } from "@/lib/mail";
 
 export async function POST(request: Request) {
     try {
@@ -41,6 +42,13 @@ export async function POST(request: Request) {
                 role: "STUDENT",
             },
         });
+
+        // Send welcome email — non-fatal: registration succeeds even if mail fails
+        try {
+            await sendWelcomeEmail(email, name);
+        } catch (mailError) {
+            console.error("Welcome email failed (non-fatal):", mailError);
+        }
 
         return NextResponse.json(
             { message: "Account created successfully", userId: user.id },
