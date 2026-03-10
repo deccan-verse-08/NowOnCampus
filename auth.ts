@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
+import Passkey from "next-auth/providers/passkey";
 import { prisma } from "@/lib/db";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -11,7 +12,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         signIn: "/login",
         error: "/login",
     },
+    experimental: {
+        enableWebAuthn: true,
+    },
     providers: [
+        Passkey({
+            formFields: {
+                email: { label: "Email", required: true, autocomplete: "username webauthn" },
+            },
+        }),
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,

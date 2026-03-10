@@ -5,7 +5,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import {
     Menu, X, GraduationCap, ChevronDown,
-    LogOut, User, LayoutDashboard, Home, Calendar, Zap, Music, Dumbbell,
+    LogOut, User, LayoutDashboard, Home, Calendar, Info, Mail,
 } from "lucide-react";
 
 export function Navbar() {
@@ -30,9 +30,8 @@ export function Navbar() {
     const navLinks = [
         { href: "/", label: "Home", icon: Home },
         { href: "/events", label: "Events", icon: Calendar },
-        { href: "/events?category=HACKATHON", label: "Hackathons", icon: Zap },
-        { href: "/events?category=CULTURAL", label: "Cultural", icon: Music },
-        { href: "/events?category=SPORTS", label: "Sports", icon: Dumbbell },
+        { href: "/about", label: "About Us", icon: Info },
+        { href: "/contact", label: "Contact Us", icon: Mail },
     ];
 
     return (

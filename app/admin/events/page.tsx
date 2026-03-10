@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { CalendarPlus, ArrowLeft, Edit, Eye } from "lucide-react";
+import { DeleteEventButton } from "@/components/admin/DeleteEventButton";
 
 export default async function AdminEventsPage() {
     const session = await auth();
@@ -128,6 +129,7 @@ export default async function AdminEventsPage() {
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                     </Link>
+                                                    <DeleteEventButton eventId={event.id} />
                                                 </div>
                                             </td>
                                         </tr>

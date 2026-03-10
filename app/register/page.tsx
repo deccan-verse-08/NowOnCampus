@@ -3,8 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
+import { signIn as signInWebAuthn } from "next-auth/webauthn";
 import { useRouter } from "next/navigation";
 import { GraduationCap, Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { checkPasskeyExists } from "@/app/actions/checkPasskey";
 
 export default function RegisterPage() {
     const router = useRouter();
@@ -17,6 +19,7 @@ export default function RegisterPage() {
     const [success, setSuccess] = useState("");
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
+    const [passkeyLoading, setPasskeyLoading] = useState(false);
 
     const passwordStrength = () => {
         if (!password) return 0;
@@ -74,6 +77,35 @@ export default function RegisterPage() {
         await signIn("google", { callbackUrl: "/" });
     };
 
+    const handlePasskeyRegister = async () => {
+        if (!email) {
+            setError("Please enter your email address first to register a Passkey.");
+            return;
+        }
+
+        setPasskeyLoading(true);
+        setError("");
+
+        try {
+            // Check if the user already has a passkey registered for this email
+            const hasPasskey = await checkPasskeyExists(email);
+            if (hasPasskey) {
+                setError("Your passkey with this email id is already present. Please sign in.");
+                setPasskeyLoading(false);
+                return;
+            }
+            await signInWebAuthn("passkey", { action: "register", email, callbackUrl: "/" });
+        } catch (error: any) {
+            if (error?.name === "NotAllowedError" || error?.message?.includes("not allowed")) {
+                setError("Passkey registration was cancelled.");
+            } else {
+                setError("Failed to register Passkey. Please try again.");
+            }
+        } finally {
+            setPasskeyLoading(false);
+        }
+    };
+
     const ps = passwordStrength();
 
     return (
@@ -107,6 +139,23 @@ export default function RegisterPage() {
                             </svg>
                         )}
                         {googleLoading ? "Signing up..." : "Continue with Google"}
+                    </button>
+
+                    {/* Passkey */}
+                    <button
+                        type="button"
+                        onClick={handlePasskeyRegister}
+                        disabled={passkeyLoading || googleLoading}
+                        className="w-full flex items-center justify-center gap-3 border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium py-3 rounded-xl transition-all duration-200 mb-6 disabled:opacity-60 disabled:cursor-not-allowed shadow-sm"
+                    >
+                        {passkeyLoading ? (
+                            <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                        ) : (
+                            <svg className="w-5 h-5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                            </svg>
+                        )}
+                        {passkeyLoading ? "Registering..." : "Register with Passkey"}
                     </button>
 
                     <div className="flex items-center gap-3 mb-6">

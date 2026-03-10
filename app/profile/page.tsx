@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { BookOpen, Calendar, CheckCircle, GraduationCap, MapPin, Clock } from "lucide-react";
+import { RegisterPasskeyButton } from "@/components/RegisterPasskeyButton";
 
 const categoryColors: Record<string, string> = {
     FORMAL: "bg-blue-100 text-blue-700",
@@ -41,6 +42,7 @@ export default async function ProfilePage() {
                 },
                 orderBy: { registeredAt: "desc" },
             },
+            Authenticator: true,
         },
     });
 
@@ -49,6 +51,9 @@ export default async function ProfilePage() {
     const upcomingRegs = user.registrations.filter((r) => r.event.status === "UPCOMING");
     const pastRegs = user.registrations.filter((r) => r.event.status !== "UPCOMING");
     const initial = user.name?.charAt(0).toUpperCase() || "U";
+    
+    // Check if the user has any WebAuthn authenticators attached
+    const hasPasskey = user.Authenticator && user.Authenticator.length > 0;
 
     return (
         <div className="min-h-screen bg-slate-50">
@@ -85,6 +90,11 @@ export default async function ProfilePage() {
                                 <p className="text-slate-400 text-xs mt-0.5">
                                     Member since {new Date(user.createdAt).toLocaleDateString("en-IN", { month: "long", year: "numeric" })}
                                 </p>
+                            </div>
+                            
+                            {/* Passkey Registration Button */}
+                            <div className="sm:ml-auto">
+                                <RegisterPasskeyButton hasPasskey={hasPasskey} email={user.email} />
                             </div>
                         </div>
 

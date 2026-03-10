@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/db";
 import { EventCard } from "@/components/EventCard";
 import Link from "next/link";
-import { Search, Filter, Calendar } from "lucide-react";
+import { Filter, Calendar } from "lucide-react";
+import { SearchBox } from "@/components/SearchBox";
 
 const categories = [
     { value: "", label: "All Events" },
@@ -29,7 +30,7 @@ interface Props {
 export default async function EventsPage({ searchParams }: Props) {
     const { category, status, search } = await searchParams;
 
-    const events = await prisma.event.findMany({
+    const eventsPromise = prisma.event.findMany({
         where: {
             ...(category ? { category: category as never } : {}),
             ...(status ? { status: status as never } : {}),
@@ -45,6 +46,20 @@ export default async function EventsPage({ searchParams }: Props) {
         },
         orderBy: { date: "asc" },
     });
+
+    const recentEventsPromise = prisma.event.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: {
+            id: true,
+            title: true,
+            date: true,
+            venue: true,
+            category: true,
+        }
+    });
+
+    const [events, recentEvents] = await Promise.all([eventsPromise, recentEventsPromise]);
 
     const activeCat = category || "";
     const activeStatus = status || "";
@@ -67,18 +82,12 @@ export default async function EventsPage({ searchParams }: Props) {
                 {/* Search & Filters */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-8 space-y-4">
                     {/* Search bar */}
-                    <form method="GET" action="/events" className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input
-                            name="search"
-                            defaultValue={search || ""}
-                            type="text"
-                            placeholder="Search events by name, venue..."
-                            className="w-full pl-11 pr-4 py-3 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                        {category && <input type="hidden" name="category" value={category} />}
-                        {status && <input type="hidden" name="status" value={status} />}
-                    </form>
+                    <SearchBox 
+                        initialSearch={search || ""} 
+                        category={category || ""} 
+                        status={status || ""} 
+                        recentEvents={recentEvents} 
+                    />
 
                     {/* Category filter */}
                     <div>
