@@ -16,8 +16,9 @@
     "@simplewebauthn/server": "^9.0.3",
     "@types/bcryptjs": "^2.4.6",
     "@types/nodemailer": "^7.0.11",
+    "aos": "^2.3.4",
     "bcryptjs": "^3.0.3",
-    "framer-motion": "^12.35.2",
+    "framer-motion": "^12.36.0",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
     "next-auth": "^5.0.0-beta.30",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/aos": "^3.0.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
