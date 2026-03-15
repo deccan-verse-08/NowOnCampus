@@ -994,7 +994,7 @@ export default function LoginPage() {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50 p-4">
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-slate-50 p-4 mt-12">
         {/* Background Blobs */}
         <div className="absolute inset-0 z-0">
           <motion.div
