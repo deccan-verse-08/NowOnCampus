@@ -41,7 +41,7 @@ export function Footer() {
     { label: "All Events", href: "/events" },
     { label: "About Us", href: "/about" },
     { label: "Contact", href: "/contact" },
-    { label: "Register", href: "/register" },
+    // { label: "Register", href: "/login" },
     { label: "Sign In", href: "/login" },
   ];
 

@@ -540,15 +540,7 @@ export default async function ProfilePage() {
                   className="w-20 h-20 rounded-3xl overflow-hidden bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-4xl shadow-lg border-4 border-white"
                   style={{ fontFamily: "'Bebas Neue', sans-serif" }}
                 >
-                  {user.image ? (
-                    <img
-                      src={user.image}
-                      alt=""
-                      className="object-cover w-full h-full"
-                    />
-                  ) : (
-                    initial
-                  )}
+                  {initial}
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 leading-tight">

@@ -2512,7 +2512,7 @@ export function Navbar() {
                   Login
                 </Link>
                 <Link
-                  href="/login"
+                  href="/login?register=true"
                   className="text-[11px] font-black uppercase tracking-wider px-4 py-2 rounded-full transition-all"
                   style={{
                     background: "#f97316",
@@ -2909,7 +2909,7 @@ export function Navbar() {
                       Login
                     </Link>
                     <Link
-                      href="/register"
+                      href="/login?register=true"
                       style={{
                         display: "flex",
                         alignItems: "center",
