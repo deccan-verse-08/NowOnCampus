@@ -2206,6 +2206,7 @@ import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 import {
   Menu,
   X,
@@ -2218,10 +2219,21 @@ import {
   Calendar,
   Info,
   Mail,
+  Zap,
+  ArrowRight,
 } from "lucide-react";
+
+const NAV_LINKS = [
+  { href: "/", label: "Home", icon: Home },
+  { href: "/events", label: "Events", icon: Zap },
+  { href: "/calendar", label: "Calendar", icon: Calendar },
+  { href: "/about", label: "About", icon: Info },
+  { href: "/contact", label: "Contact", icon: Mail },
+];
 
 export function Navbar() {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
@@ -2229,82 +2241,138 @@ export function Navbar() {
 
   const isAdmin = (session?.user as { role?: string })?.role === "ADMIN";
 
+  // close dropdown on outside click
   useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
+    function handle(e: MouseEvent) {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(e.target as Node)
-      ) {
+      )
         setDropdownOpen(false);
-      }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
   }, []);
 
-  const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/events", label: "Events" },
-    { href: "/calendar", label: "Calendar" },
-    { href: "/about", label: "About" },
-    { href: "/contact", label: "Contact" },
-  ];
+  // close mobile menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
     <div className="fixed top-3 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none">
       <motion.nav
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="pointer-events-auto w-full max-w-4xl bg-slate-900/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-full px-6 py-2 transition-all duration-300"
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        className="pointer-events-auto w-full max-w-4xl"
+        style={{
+          background: "rgba(15,23,42,0.85)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          border: "1px solid rgba(255,255,255,0.10)",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
+          /* ← pill on desktop, rectangle on mobile handled below */
+          borderRadius: menuOpen ? "1.5rem" : "9999px",
+          transition: "border-radius 0.3s ease",
+          overflow: "hidden",
+        }}
       >
-        <div className="flex items-center justify-between h-12">
-          {/* --- Brand --- */}
+        {/* ── TOP ROW ── */}
+        <div className="flex items-center justify-between px-5 h-14">
+          {/* Brand */}
           <Link
             href="/"
             className="flex items-center gap-2 group flex-shrink-0"
           >
-            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg group-hover:rotate-12 transition-transform">
-              <GraduationCap className="w-4 h-4 text-slate-900" />
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg"
+              style={{ background: "#f97316", transition: "transform 0.25s" }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.transform = "rotate(12deg)")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.transform = "rotate(0deg)")
+              }
+            >
+              <GraduationCap className="w-4 h-4 text-white" />
             </div>
-            <span className="text-sm font-black text-white tracking-widest hidden sm:block uppercase">
+            <span
+              className="text-sm font-black text-white tracking-widest hidden sm:block uppercase"
+              style={{ fontFamily: "'DM Sans', sans-serif" }}
+            >
               NowOnCampus
             </span>
           </Link>
 
-          {/* --- Desktop Links with Smooth Underline --- */}
+          {/* Desktop links */}
           <div
-            className="hidden md:flex items-center gap-2 relative"
+            className="hidden md:flex items-center gap-1 relative"
             onMouseLeave={() => setHoveredLink(null)}
           >
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onMouseEnter={() => setHoveredLink(link.href)}
-                className="relative px-4 py-1.5 text-xs font-bold text-slate-300 hover:text-white transition-colors uppercase tracking-wider"
-              >
-                {link.label}
-                {/* Smooth Sliding Underline */}
-                {hoveredLink === link.href && (
-                  <motion.div
-                    layoutId="nav-underline"
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-full"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  />
-                )}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const active = isActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onMouseEnter={() => setHoveredLink(link.href)}
+                  className="relative px-4 py-1.5 text-[11px] font-black uppercase tracking-wider transition-colors"
+                  style={{
+                    color: active ? "#f97316" : "rgba(255,255,255,0.65)",
+                  }}
+                >
+                  {link.label}
+                  {/* active dot */}
+                  {active && (
+                    <motion.span
+                      layoutId="nav-active-dot"
+                      className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+                      style={{ background: "#f97316" }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 380,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  {/* hover underline */}
+                  {hoveredLink === link.href && !active && (
+                    <motion.div
+                      layoutId="nav-underline"
+                      className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full"
+                      style={{ background: "rgba(255,255,255,0.3)" }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 380,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                </Link>
+              );
+            })}
           </div>
 
-          {/* --- Right Actions --- */}
+          {/* Desktop right */}
           <div className="hidden md:flex items-center gap-3">
             {status === "loading" ? (
-              <div className="w-8 h-8 rounded-full bg-white/5 animate-pulse" />
+              <div
+                className="w-8 h-8 rounded-full animate-pulse"
+                style={{ background: "rgba(255,255,255,0.08)" }}
+              />
             ) : session ? (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 p-1 pr-3 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                  className="flex items-center gap-2 p-1 pr-3 rounded-full transition-all"
+                  style={{
+                    background: "rgba(255,255,255,0.07)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
                 >
                   {session.user?.image ? (
                     <img
@@ -2313,99 +2381,509 @@ export function Navbar() {
                       className="w-7 h-7 rounded-full"
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-black">
+                    <div
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-black"
+                      style={{ background: "#f97316" }}
+                    >
                       {session.user?.name?.charAt(0).toUpperCase()}
                     </div>
                   )}
                   <ChevronDown
-                    className={`w-3 h-3 text-slate-400 transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+                    className="w-3 h-3 transition-transform"
+                    style={{
+                      color: "rgba(255,255,255,0.5)",
+                      transform: dropdownOpen ? "rotate(180deg)" : "rotate(0)",
+                    }}
                   />
                 </button>
 
                 <AnimatePresence>
                   {dropdownOpen && (
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 mt-3 w-48 bg-slate-900 border border-white/10 rounded-2xl shadow-2xl py-2 overflow-hidden"
+                      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                      transition={{ duration: 0.18 }}
+                      className="absolute right-0 mt-3 w-48 py-2 overflow-hidden"
+                      style={{
+                        background: "#0f172a",
+                        border: "1px solid rgba(255,255,255,0.10)",
+                        borderRadius: "1.25rem",
+                        boxShadow: "0 20px 50px rgba(0,0,0,0.4)",
+                      }}
                     >
+                      {/* user info */}
+                      <div
+                        className="px-4 pb-2 mb-1"
+                        style={{
+                          borderBottom: "1px solid rgba(255,255,255,0.07)",
+                        }}
+                      >
+                        <p className="text-xs font-black text-white truncate">
+                          {session.user?.name}
+                        </p>
+                        <p
+                          className="text-[10px] truncate"
+                          style={{ color: "rgba(255,255,255,0.4)" }}
+                        >
+                          {session.user?.email}
+                        </p>
+                      </div>
                       <Link
                         href="/profile"
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/10 transition-all"
+                        onClick={() => setDropdownOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2 text-sm font-semibold transition-colors"
+                        style={{ color: "rgba(255,255,255,0.75)" }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background =
+                            "rgba(255,255,255,0.06)")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background = "transparent")
+                        }
                       >
-                        <User size={14} /> Profile
+                        <User size={13} /> Profile
                       </Link>
                       {isAdmin && (
                         <Link
                           href="/admin"
-                          className="flex items-center gap-3 px-4 py-2 text-sm text-slate-300 hover:bg-white/10 transition-all"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm font-semibold transition-colors"
+                          style={{ color: "rgba(255,255,255,0.75)" }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.background =
+                              "rgba(255,255,255,0.06)")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.background = "transparent")
+                          }
                         >
-                          <LayoutDashboard size={14} /> Admin
+                          <LayoutDashboard size={13} /> Admin
                         </Link>
                       )}
                       <button
-                        onClick={() => signOut()}
-                        className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-all"
+                        onClick={() => {
+                          setDropdownOpen(false);
+                          signOut();
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2 text-sm font-semibold transition-colors"
+                        style={{ color: "#f87171" }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.background =
+                            "rgba(239,68,68,0.08)")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.background = "transparent")
+                        }
                       >
-                        <LogOut size={14} /> Sign Out
+                        <LogOut size={13} /> Sign Out
                       </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             ) : (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="text-xs font-bold text-slate-300 hover:text-white transition-all uppercase"
+                  className="text-[11px] font-black uppercase tracking-wider transition-colors"
+                  style={{ color: "rgba(255,255,255,0.6)" }}
                 >
                   Login
                 </Link>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <Link
+                  href="/register"
+                  className="text-[11px] font-black uppercase tracking-wider px-4 py-2 rounded-full transition-all"
+                  style={{
+                    background: "#f97316",
+                    color: "#fff",
+                    boxShadow: "0 4px 14px rgba(249,115,22,0.35)",
+                  }}
                 >
-                  <Link
-                    href="/login"
-                    className="px-5 py-2 text-xs font-black text-slate-900 bg-white rounded-full shadow-lg transition-all"
-                  >
-                    REGISTER
-                  </Link>
-                </motion.div>
+                  Register
+                </Link>
               </div>
             )}
           </div>
 
-          {/* --- Mobile Toggle --- */}
+          {/* Mobile toggle */}
           <button
-            className="md:hidden p-2 text-slate-400"
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl transition-colors"
+            style={{
+              background: menuOpen
+                ? "rgba(249,115,22,0.15)"
+                : "rgba(255,255,255,0.06)",
+            }}
             onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
           >
-            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            <AnimatePresence mode="wait" initial={false}>
+              {menuOpen ? (
+                <motion.span
+                  key="x"
+                  initial={{ rotate: -90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: 90, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <X
+                    size={18}
+                    color={menuOpen ? "#f97316" : "rgba(255,255,255,0.7)"}
+                  />
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="menu"
+                  initial={{ rotate: 90, opacity: 0 }}
+                  animate={{ rotate: 0, opacity: 1 }}
+                  exit={{ rotate: -90, opacity: 0 }}
+                  transition={{ duration: 0.15 }}
+                >
+                  <Menu size={18} color="rgba(255,255,255,0.7)" />
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
         </div>
 
-        {/* --- Mobile Menu --- */}
+        {/* ── MOBILE MENU ── */}
         <AnimatePresence>
           {menuOpen && (
             <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="md:hidden border-t border-white/5 mt-2 overflow-hidden"
+              key="mobile-menu"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              style={{ overflow: "hidden" }}
             >
-              <div className="flex flex-col py-4 gap-2">
-                {navLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="px-4 py-2 text-sm font-bold text-slate-300"
+              {/* divider */}
+              <div
+                style={{
+                  height: "1px",
+                  background: "rgba(255,255,255,0.07)",
+                  margin: "0 1.25rem",
+                }}
+              />
+
+              <div style={{ padding: "1rem 1rem 0.75rem" }}>
+                {/* Nav links */}
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "2px",
+                    marginBottom: "1rem",
+                  }}
+                >
+                  {NAV_LINKS.map((link, i) => {
+                    const active = isActive(link.href);
+                    return (
+                      <motion.div
+                        key={link.href}
+                        initial={{ opacity: 0, x: -12 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04, duration: 0.2 }}
+                      >
+                        <Link
+                          href={link.href}
+                          className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
+                          style={{
+                            background: active
+                              ? "rgba(249,115,22,0.12)"
+                              : "transparent",
+                            border: active
+                              ? "1px solid rgba(249,115,22,0.25)"
+                              : "1px solid transparent",
+                            color: active
+                              ? "#f97316"
+                              : "rgba(255,255,255,0.70)",
+                            textDecoration: "none",
+                          }}
+                        >
+                          <span
+                            className="flex items-center justify-center w-7 h-7 rounded-lg flex-shrink-0"
+                            style={{
+                              background: active
+                                ? "rgba(249,115,22,0.18)"
+                                : "rgba(255,255,255,0.06)",
+                            }}
+                          >
+                            <link.icon
+                              size={13}
+                              color={
+                                active ? "#f97316" : "rgba(255,255,255,0.5)"
+                              }
+                            />
+                          </span>
+                          <span
+                            style={{
+                              fontSize: "0.8125rem",
+                              fontWeight: 800,
+                              textTransform: "uppercase",
+                              letterSpacing: "0.08em",
+                            }}
+                          >
+                            {link.label}
+                          </span>
+                          {active && (
+                            <span
+                              className="ml-auto flex items-center gap-1"
+                              style={{
+                                fontSize: "9px",
+                                fontWeight: 800,
+                                textTransform: "uppercase",
+                                letterSpacing: "0.12em",
+                                color: "#f97316",
+                              }}
+                            >
+                              <span
+                                style={{
+                                  width: "5px",
+                                  height: "5px",
+                                  borderRadius: "50%",
+                                  background: "#f97316",
+                                  display: "inline-block",
+                                }}
+                              />
+                              Active
+                            </span>
+                          )}
+                        </Link>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+
+                {/* divider */}
+                <div
+                  style={{
+                    height: "1px",
+                    background: "rgba(255,255,255,0.07)",
+                    marginBottom: "1rem",
+                  }}
+                />
+
+                {/* User section */}
+                {status === "loading" ? null : session ? (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
                   >
-                    {link.label}
-                  </Link>
-                ))}
+                    {/* user info chip */}
+                    <div
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl"
+                      style={{
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                      }}
+                    >
+                      {session.user?.image ? (
+                        <img
+                          src={session.user.image}
+                          alt="avatar"
+                          style={{
+                            width: "32px",
+                            height: "32px",
+                            borderRadius: "10px",
+                            objectFit: "cover",
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: "32px",
+                            height: "32px",
+                            borderRadius: "10px",
+                            background: "#f97316",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#fff",
+                            fontSize: "13px",
+                            fontWeight: 800,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {session.user?.name?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div style={{ minWidth: 0 }}>
+                        <p
+                          style={{
+                            fontSize: "0.8125rem",
+                            fontWeight: 800,
+                            color: "#fff",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {session.user?.name}
+                        </p>
+                        <p
+                          style={{
+                            fontSize: "0.6875rem",
+                            color: "rgba(255,255,255,0.4)",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {session.user?.email}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
+                      style={{
+                        color: "rgba(255,255,255,0.70)",
+                        textDecoration: "none",
+                      }}
+                    >
+                      <span
+                        className="w-7 h-7 rounded-lg flex items-center justify-center"
+                        style={{ background: "rgba(255,255,255,0.06)" }}
+                      >
+                        <User size={13} color="rgba(255,255,255,0.5)" />
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "0.8125rem",
+                          fontWeight: 800,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        Profile
+                      </span>
+                    </Link>
+
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
+                        style={{
+                          color: "rgba(255,255,255,0.70)",
+                          textDecoration: "none",
+                        }}
+                      >
+                        <span
+                          className="w-7 h-7 rounded-lg flex items-center justify-center"
+                          style={{ background: "rgba(255,255,255,0.06)" }}
+                        >
+                          <LayoutDashboard
+                            size={13}
+                            color="rgba(255,255,255,0.5)"
+                          />
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "0.8125rem",
+                            fontWeight: 800,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          Admin
+                        </span>
+                      </Link>
+                    )}
+
+                    <button
+                      onClick={() => signOut()}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors w-full text-left"
+                      style={{
+                        color: "#f87171",
+                        background: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <span
+                        className="w-7 h-7 rounded-lg flex items-center justify-center"
+                        style={{ background: "rgba(239,68,68,0.08)" }}
+                      >
+                        <LogOut size={13} color="#f87171" />
+                      </span>
+                      <span
+                        style={{
+                          fontSize: "0.8125rem",
+                          fontWeight: 800,
+                          textTransform: "uppercase",
+                          letterSpacing: "0.08em",
+                        }}
+                      >
+                        Sign Out
+                      </span>
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "0.5rem",
+                      paddingBottom: "0.25rem",
+                    }}
+                  >
+                    <Link
+                      href="/login"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                        padding: "11px",
+                        borderRadius: "12px",
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.10)",
+                        color: "#fff",
+                        textDecoration: "none",
+                        fontSize: "0.8125rem",
+                        fontWeight: 800,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      href="/register"
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: "6px",
+                        padding: "11px",
+                        borderRadius: "12px",
+                        background: "#f97316",
+                        border: "1px solid transparent",
+                        color: "#fff",
+                        textDecoration: "none",
+                        fontSize: "0.8125rem",
+                        fontWeight: 800,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                        boxShadow: "0 4px 14px rgba(249,115,22,0.35)",
+                      }}
+                    >
+                      Register
+                      <ArrowRight size={13} />
+                    </Link>
+                  </motion.div>
+                )}
               </div>
             </motion.div>
           )}
