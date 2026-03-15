@@ -417,7 +417,7 @@ export async function sendEventRequestApprovedEmail(
   userName: string,
   eventTitle: string
 ) {
-  const eventsUrl = `${getBaseUrl()}/events`;
+  const eventsUrl = `https://now-on-campus.vercel.app/events`;
 
   const html = `
   <!DOCTYPE html>
