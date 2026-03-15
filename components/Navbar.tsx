@@ -2245,6 +2245,7 @@ export function Navbar() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/events", label: "Events" },
+    { href: "/calendar", label: "Calendar" },
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
   ];
@@ -2366,7 +2367,7 @@ export function Navbar() {
                   whileTap={{ scale: 0.95 }}
                 >
                   <Link
-                    href="/register"
+                    href="/login"
                     className="px-5 py-2 text-xs font-black text-slate-900 bg-white rounded-full shadow-lg transition-all"
                   >
                     REGISTER
