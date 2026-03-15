@@ -409,3 +409,151 @@ export async function sendOtpEmail(userEmail: string, userName: string, otp: str
     html,
   });
 }
+
+// ── Event Request: Approved ───────────────────────────────────────────────────
+
+export async function sendEventRequestApprovedEmail(
+  userEmail: string,
+  userName: string,
+  eventTitle: string
+) {
+  const eventsUrl = `${getBaseUrl()}/events`;
+
+  const html = `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head><meta charset="UTF-8" /><title>Event Request Approved</title></head>
+  <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 16px;">
+      <tr><td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+          <!-- Header -->
+          <tr><td style="background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:16px 16px 0 0;padding:36px 32px;text-align:center;">
+            <div style="margin-bottom:16px;">
+              <span style="background:white;border-radius:12px;padding:8px 12px;font-size:22px;font-weight:900;color:#16a34a;">NOC</span>
+            </div>
+            <div style="font-size:48px;margin:8px 0;">🎉</div>
+            <h1 style="color:white;font-size:26px;font-weight:800;margin:0 0 8px;">Request Approved!</h1>
+            <p style="color:#bbf7d0;font-size:15px;margin:0;">Your event is now live on NowOnCampus</p>
+          </td></tr>
+
+          <!-- Body -->
+          <tr><td style="background:white;padding:32px;">
+            <p style="color:#374151;font-size:16px;margin:0 0 16px;">Hi <strong>${userName}</strong>,</p>
+            <p style="color:#374151;font-size:15px;margin:0 0 24px;">
+              Great news! Your event creation request for <strong>${eventTitle}</strong> has been
+              <strong style="color:#16a34a;">approved</strong> by an admin.
+              Your event is now live and students can start registering!
+            </p>
+
+            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:20px;margin-bottom:24px;text-align:center;">
+              <span style="color:#166534;font-size:15px;font-weight:700;">✅ Status: APPROVED &amp; LIVE</span>
+            </div>
+
+            <div style="text-align:center;margin-bottom:24px;">
+              <a href="${eventsUrl}" style="display:inline-block;background:#16a34a;color:white;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:10px;">
+                View Your Event →
+              </a>
+            </div>
+
+            <p style="color:#6b7280;font-size:13px;margin:0;">
+              Thank you for contributing to the campus community!
+            </p>
+          </td></tr>
+
+          <!-- Footer -->
+          <tr><td style="background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 16px 16px;padding:20px 32px;text-align:center;">
+            <p style="color:#94a3b8;font-size:12px;margin:0;">
+              &copy; 2025 NowOnCampus. All rights reserved.<br />
+              This is an automated notification. Please do not reply.
+            </p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+  </html>
+  `;
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || process.env.GMAIL_USER,
+    to: userEmail,
+    subject: `🎉 Your Event Request Approved: ${eventTitle} — NowOnCampus`,
+    html,
+  });
+}
+
+// ── Event Request: Rejected ───────────────────────────────────────────────────
+
+export async function sendEventRequestRejectedEmail(
+  userEmail: string,
+  userName: string,
+  eventTitle: string,
+  reviewNote?: string | null
+) {
+  const html = `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head><meta charset="UTF-8" /><title>Event Request Rejected</title></head>
+  <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 16px;">
+      <tr><td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+          <!-- Header -->
+          <tr><td style="background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:16px 16px 0 0;padding:36px 32px;text-align:center;">
+            <div style="margin-bottom:16px;">
+              <span style="background:white;border-radius:12px;padding:8px 12px;font-size:22px;font-weight:900;color:#dc2626;">NOC</span>
+            </div>
+            <div style="font-size:48px;margin:8px 0;">📋</div>
+            <h1 style="color:white;font-size:26px;font-weight:800;margin:0 0 8px;">Request Not Approved</h1>
+            <p style="color:#fecaca;font-size:15px;margin:0;">Your event creation request has been reviewed</p>
+          </td></tr>
+
+          <!-- Body -->
+          <tr><td style="background:white;padding:32px;">
+            <p style="color:#374151;font-size:16px;margin:0 0 16px;">Hi <strong>${userName}</strong>,</p>
+            <p style="color:#374151;font-size:15px;margin:0 0 24px;">
+              Thank you for submitting your event request for <strong>${eventTitle}</strong>.
+              Unfortunately, after review, the admin was unable to approve it at this time.
+            </p>
+
+            ${reviewNote ? `
+            <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:20px;margin-bottom:24px;">
+              <p style="color:#991b1b;font-size:13px;font-weight:700;margin:0 0 8px;text-transform:uppercase;letter-spacing:.05em;">Admin Note</p>
+              <p style="color:#374151;font-size:14px;margin:0;">${reviewNote}</p>
+            </div>
+            ` : ""}
+
+            <p style="color:#374151;font-size:15px;margin:0 0 24px;">
+              You're welcome to submit a new request with updated details. If you have questions,
+              please contact the campus administration.
+            </p>
+
+            <div style="background:#fef2f2;border-radius:10px;padding:16px;text-align:center;margin-bottom:24px;">
+              <span style="color:#991b1b;font-size:14px;font-weight:700;">❌ Status: NOT APPROVED</span>
+            </div>
+          </td></tr>
+
+          <!-- Footer -->
+          <tr><td style="background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 16px 16px;padding:20px 32px;text-align:center;">
+            <p style="color:#94a3b8;font-size:12px;margin:0;">
+              &copy; 2025 NowOnCampus. All rights reserved.<br />
+              This is an automated notification. Please do not reply.
+            </p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+  </html>
+  `;
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || process.env.GMAIL_USER,
+    to: userEmail,
+    subject: `📋 Event Request Update: ${eventTitle} — NowOnCampus`,
+    html,
+  });
+}

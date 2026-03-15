@@ -370,10 +370,11 @@ export default async function AdminDashboard() {
   };
 
   const quickActions = [
-    { label: "Create Event",      desc: "Add a new event",              href: "/admin/events/new",    icon: CalendarPlus, color: "#f97316", iconBg: "rgba(249,115,22,0.10)" },
-    { label: "Manage Events",     desc: "Edit or delete events",         href: "/admin/events",         icon: Calendar,     color: "#8b5cf6", iconBg: "rgba(139,92,246,0.10)"  },
-    { label: "Registrations",     desc: "All student sign-ups",          href: "/admin/registrations",  icon: CheckCircle,  color: "#10b981", iconBg: "rgba(16,185,129,0.10)"  },
-    { label: "Manage Users",      desc: "View & delete accounts",        href: "/admin/users",          icon: Users,        color: "#60a5fa", iconBg: "rgba(96,165,250,0.10)"  },
+    { label: "Create Event",      desc: "Add a new event",              href: "/admin/events/new",          icon: CalendarPlus, color: "#f97316", iconBg: "rgba(249,115,22,0.10)" },
+    { label: "Manage Events",     desc: "Edit or delete events",         href: "/admin/events",               icon: Calendar,     color: "#8b5cf6", iconBg: "rgba(139,92,246,0.10)"  },
+    { label: "Event Requests",    desc: "Review student event requests", href: "/admin/event-requests",       icon: CheckCircle,  color: "#f59e0b", iconBg: "rgba(245,158,11,0.10)"  },
+    { label: "Registrations",     desc: "All student sign-ups",          href: "/admin/registrations",        icon: Zap,          color: "#10b981", iconBg: "rgba(16,185,129,0.10)"  },
+    { label: "Manage Users",      desc: "View & delete accounts",        href: "/admin/users",                icon: Users,        color: "#60a5fa", iconBg: "rgba(96,165,250,0.10)"  },
   ];
 
   return (

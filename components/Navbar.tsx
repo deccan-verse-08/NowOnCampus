@@ -2221,6 +2221,7 @@ import {
   Mail,
   Zap,
   ArrowRight,
+  Send,
 } from "lucide-react";
 
 const NAV_LINKS = [
@@ -2237,6 +2238,7 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+  const [imgError, setImgError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isAdmin = (session?.user as { role?: string })?.role === "ADMIN";
@@ -2278,7 +2280,7 @@ export function Navbar() {
           /* ← pill on desktop, rectangle on mobile handled below */
           borderRadius: menuOpen ? "1.5rem" : "9999px",
           transition: "border-radius 0.3s ease",
-          overflow: "hidden",
+          overflow: menuOpen ? "hidden" : "visible",
         }}
       >
         {/* ── TOP ROW ── */}
@@ -2374,18 +2376,19 @@ export function Navbar() {
                     border: "1px solid rgba(255,255,255,0.12)",
                   }}
                 >
-                  {session.user?.image ? (
+                  {session.user?.image && !imgError ? (
                     <img
                       src={session.user.image}
                       alt="avatar"
                       className="w-7 h-7 rounded-full"
+                      onError={() => setImgError(true)}
                     />
                   ) : (
                     <div
                       className="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-black"
                       style={{ background: "#f97316" }}
                     >
-                      {session.user?.name?.charAt(0).toUpperCase()}
+                      {session.user?.name?.charAt(0).toUpperCase() || "U"}
                     </div>
                   )}
                   <ChevronDown
@@ -2444,6 +2447,23 @@ export function Navbar() {
                       >
                         <User size={13} /> Profile
                       </Link>
+                      {!isAdmin && (
+                        <Link
+                          href="/request-event"
+                          onClick={() => setDropdownOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2 text-sm font-semibold transition-colors"
+                          style={{ color: "rgba(249,115,22,0.90)" }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.background =
+                              "rgba(249,115,22,0.08)")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.background = "transparent")
+                          }
+                        >
+                          <Send size={13} /> Request Event
+                        </Link>
+                      )}
                       {isAdmin && (
                         <Link
                           href="/admin"
@@ -2492,7 +2512,7 @@ export function Navbar() {
                   Login
                 </Link>
                 <Link
-                  href="/register"
+                  href="/login"
                   className="text-[11px] font-black uppercase tracking-wider px-4 py-2 rounded-full transition-all"
                   style={{
                     background: "#f97316",
@@ -2684,7 +2704,7 @@ export function Navbar() {
                         border: "1px solid rgba(255,255,255,0.08)",
                       }}
                     >
-                      {session.user?.image ? (
+                      {session.user?.image && !imgError ? (
                         <img
                           src={session.user.image}
                           alt="avatar"
@@ -2694,6 +2714,7 @@ export function Navbar() {
                             borderRadius: "10px",
                             objectFit: "cover",
                           }}
+                          onError={() => setImgError(true)}
                         />
                       ) : (
                         <div
@@ -2711,7 +2732,7 @@ export function Navbar() {
                             flexShrink: 0,
                           }}
                         >
-                          {session.user?.name?.charAt(0).toUpperCase()}
+                          {session.user?.name?.charAt(0).toUpperCase() || "U"}
                         </div>
                       )}
                       <div style={{ minWidth: 0 }}>
@@ -2766,6 +2787,34 @@ export function Navbar() {
                         Profile
                       </span>
                     </Link>
+
+                    {!isAdmin && (
+                      <Link
+                        href="/request-event"
+                        className="flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
+                        style={{
+                          color: "#f97316",
+                          textDecoration: "none",
+                        }}
+                      >
+                        <span
+                          className="w-7 h-7 rounded-lg flex items-center justify-center"
+                          style={{ background: "rgba(249,115,22,0.12)" }}
+                        >
+                          <Send size={13} color="#f97316" />
+                        </span>
+                        <span
+                          style={{
+                            fontSize: "0.8125rem",
+                            fontWeight: 800,
+                            textTransform: "uppercase",
+                            letterSpacing: "0.08em",
+                          }}
+                        >
+                          Request Event
+                        </span>
+                      </Link>
+                    )}
 
                     {isAdmin && (
                       <Link

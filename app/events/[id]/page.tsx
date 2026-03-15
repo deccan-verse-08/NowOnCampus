@@ -351,10 +351,10 @@ import {
   Share2,
   CheckCircle,
   Tag,
-  User,
   ArrowRight,
 } from "lucide-react";
 import { RegisterButton } from "./RegisterButton";
+import { EventComments } from "@/components/EventComments";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
@@ -804,6 +804,9 @@ export default async function EventDetailPage({ params }: Props) {
                 </div>
               </div>
             </div>
+
+            {/* Comments Component */}
+            <EventComments eventId={event.id} />
           </div>
 
           {/* ── RIGHT SIDEBAR ── */}

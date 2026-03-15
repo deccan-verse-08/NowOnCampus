@@ -21,11 +21,14 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  registrations Registration[]
-  organizedEvents Event[] @relation("EventOrganizer")
-  Authenticator   Authenticator[]
+  accounts          Account[]
+  sessions          Session[]
+  registrations     Registration[]
+  organizedEvents   Event[]        @relation("EventOrganizer")
+  Authenticator     Authenticator[]
+  eventRequests     EventRequest[] @relation("EventRequester")
+  reviewedRequests  EventRequest[] @relation("EventReviewer")
+  eventComments     EventComment[]
 }
 
 model Account {
@@ -102,6 +105,7 @@ model Event {
 
   organizer     User           @relation("EventOrganizer", fields: [organizerId], references: [id])
   registrations Registration[]
+  comments      EventComment[]
 }
 
 model Registration {
@@ -145,4 +149,51 @@ enum RegistrationStatus {
   CONFIRMED
   WAITLISTED
   CANCELLED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model EventRequest {
+  id                   String        @id @default(cuid())
+  title                String
+  description          String        @db.Text
+  shortDescription     String?
+  category             EventCategory
+  date                 DateTime
+  endDate              DateTime?
+  venue                String
+  registrationDeadline DateTime?
+  maxParticipants      Int?
+  prizeMoney           String?
+  teamSize             String?
+  image                String?
+  tags                 String?
+  message              String?       @db.Text
+  status               RequestStatus @default(PENDING)
+  requesterId          String
+  reviewedById         String?
+  reviewNote           String?       @db.Text
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  requester  User  @relation("EventRequester", fields: [requesterId],  references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("EventReviewer",  fields: [reviewedById], references: [id])
+}
+
+model EventComment {
+  id        String   @id @default(cuid())
+  text      String   @db.Text
+  rating    Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
