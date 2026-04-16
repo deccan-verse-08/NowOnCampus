@@ -433,6 +433,7 @@ import {
 import { RegisterPasskeyButton } from "@/components/RegisterPasskeyButton";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { RegistrationLifecycleManager } from "./RegistrationLifecycleManager";
 
 const categoryColors: Record<string, string> = {
   FORMAL: "bg-blue-100 text-blue-700",
@@ -465,6 +466,15 @@ export default async function ProfilePage() {
     include: {
       registrations: {
         include: {
+          teamParticipants: {
+            select: {
+              id: true,
+              name: true,
+              rollNumber: true,
+              course: true,
+              phoneNumber: true,
+            },
+          },
           event: {
             select: {
               id: true,
@@ -473,6 +483,7 @@ export default async function ProfilePage() {
               date: true,
               venue: true,
               status: true,
+              registrationDeadline: true,
             },
           },
         },
@@ -489,6 +500,21 @@ export default async function ProfilePage() {
   const upcomingCount = user.registrations.filter(
     (r) => r.event.status === "UPCOMING",
   ).length;
+  const lifecycleRegistrations = user.registrations.map((registration) => ({
+    id: registration.id,
+    eventId: registration.event.id,
+    eventTitle: registration.event.title,
+    eventCategory: registration.event.category,
+    eventVenue: registration.event.venue,
+    eventDate: registration.event.date.toISOString(),
+    eventStatus: registration.event.status,
+    registrationDeadline: registration.event.registrationDeadline
+      ? registration.event.registrationDeadline.toISOString()
+      : null,
+    status: registration.status,
+    teamName: registration.teamName,
+    teamParticipants: registration.teamParticipants,
+  }));
 
   return (
     <div
@@ -696,6 +722,10 @@ export default async function ProfilePage() {
                 </div>
               )}
             </div>
+          </div>
+
+          <div className="col-span-12">
+            <RegistrationLifecycleManager registrations={lifecycleRegistrations} />
           </div>
         </div>
       </main>

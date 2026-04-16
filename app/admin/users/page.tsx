@@ -100,7 +100,7 @@ export default async function AdminUsersPage() {
           </div>
         </div>
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

@@ -6,7 +6,7 @@
 
 ### For Students:
 * **Event Discovery:** Browse a categorized and sortable list of all upcoming, ongoing, and past events.
-* **Easy Registration:** One-click registration for events (if spots are available and the deadline hasn't passed).
+* **Smart Registration Lifecycle:** Register, auto-join waitlists when events are full, cancel registrations, and edit hackathon team details before registration deadline.
 * **Two-Step OTP Login:** Secure login flow using an email-delivered one-time password (OTP) instead of a traditional password. 
 * **Seamless Google OAuth:** Quick sign-in using your Google account via NextAuth.
 * **Dashboard & Profile:** A beautifully designed profile dashboard to view all your registered events, statistics, and account details.
@@ -14,6 +14,7 @@
 ### For Administrators:
 * **Event Management:** Create, edit, and delete events with details like date, venue, max participants, team sizes, prize money, and categorization.
 * **Registration Tracking:** View and manage a comprehensive list of all event registrations.
+* **Analytics & Exports:** Monitor registration trends, event performance, and export CSV reports for registrations and hackathon team data.
 * **User Management:** View all users, assign roles, and remove accounts if necessary (includes automatic handling of decremeting event participant counts upon deletion).
 * **Secure Admin Access:** All admin routes and API endpoints are strictly protected.
 
@@ -23,7 +24,7 @@
 * **Language:** [TypeScript](https://www.typescriptlang.org/)
 * **Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
 * **Database Interfacing & ORM:** [Prisma](https://www.prisma.io/)
-* **Database Setup:** PostgreSQL (Neon DB recommended)
+* **Database Setup:** MySQL
 * **Authentication:** [NextAuth.js v5 (Auth.js)](https://authjs.dev/)
 * **Email / OTP Sending:** [Nodemailer](https://nodemailer.com/)
 * **Icons:** [Lucide React](https://lucide.dev/)

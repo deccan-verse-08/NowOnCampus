@@ -2220,6 +2220,7 @@ import {
   Info,
   Mail,
   Zap,
+  Trophy,
   ArrowRight,
   Send,
 } from "lucide-react";
@@ -2227,6 +2228,7 @@ import {
 const NAV_LINKS = [
   { href: "/", label: "Home", icon: Home },
   { href: "/events", label: "Events", icon: Zap },
+  { href: "/hackathon-results", label: "Winners", icon: Trophy },
   { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/about", label: "About", icon: Info },
   { href: "/contact", label: "Contact", icon: Mail },

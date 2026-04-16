@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ClipboardList, User, Calendar, MapPin } from "lucide-react";
+import { ArrowLeft, ClipboardList, Calendar, MapPin } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 
@@ -46,6 +46,15 @@ export default async function AdminRegistrationsPage() {
           status: true,
         },
       },
+      teamParticipants: {
+        select: {
+          id: true,
+          name: true,
+          rollNumber: true,
+          course: true,
+          phoneNumber: true,
+        },
+      },
     },
   });
 
@@ -87,7 +96,7 @@ export default async function AdminRegistrationsPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[700px]">
+                <table className="w-full min-w-[980px]">
                   <thead>
                     <tr className="bg-slate-50 border-b border-slate-200">
                       <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
@@ -98,6 +107,9 @@ export default async function AdminRegistrationsPage() {
                       </th>
                       <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
                         Category
+                      </th>
+                      <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                        Team Details
                       </th>
                       <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-500 uppercase tracking-wide">
                         Registered On
@@ -171,6 +183,33 @@ export default async function AdminRegistrationsPage() {
                           >
                             {reg.event.category}
                           </span>
+                        </td>
+
+                        {/* Team Details */}
+                        <td className="px-5 py-3.5">
+                          {reg.event.category === "HACKATHON" ? (
+                            <div className="space-y-1.5">
+                              <p className="text-xs font-semibold text-slate-800">
+                                Team: {reg.teamName || "Not provided"}
+                              </p>
+                              {reg.teamParticipants.length === 0 ? (
+                                <p className="text-xs text-red-500">
+                                  No teammate details submitted
+                                </p>
+                              ) : (
+                                <div className="space-y-1">
+                                  {reg.teamParticipants.map((member) => (
+                                    <p key={member.id} className="text-xs text-slate-500">
+                                      {member.name} · {member.rollNumber} · {member.course} ·{" "}
+                                      {member.phoneNumber}
+                                    </p>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-500">Individual registration</p>
+                          )}
                         </td>
 
                         {/* Date */}

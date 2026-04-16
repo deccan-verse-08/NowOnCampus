@@ -29,6 +29,7 @@ model User {
   eventRequests     EventRequest[] @relation("EventRequester")
   reviewedRequests  EventRequest[] @relation("EventReviewer")
   eventComments     EventComment[]
+  hackathonResultPosts HackathonResultPost[] @relation("HackathonResultCreator")
 }
 
 model Account {
@@ -106,6 +107,7 @@ model Event {
   organizer     User           @relation("EventOrganizer", fields: [organizerId], references: [id])
   registrations Registration[]
   comments      EventComment[]
+  hackathonResultPosts HackathonResultPost[]
 }
 
 model Registration {
@@ -118,8 +120,40 @@ model Registration {
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  teamParticipants TeamParticipant[]
 
   @@unique([userId, eventId])
+}
+
+model TeamParticipant {
+  id             String   @id @default(cuid())
+  registrationId String
+  name           String
+  rollNumber     String
+  course         String
+  phoneNumber    String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  registration Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@index([registrationId])
+}
+
+model HackathonResultPost {
+  id               String   @id @default(cuid())
+  eventId          String
+  createdById      String
+  winningTeamName  String
+  announcement     String   @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdBy User  @relation("HackathonResultCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([createdAt])
 }
 
 enum Role {

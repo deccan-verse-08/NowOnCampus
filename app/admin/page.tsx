@@ -322,6 +322,8 @@ import {
   TrendingUp,
   ArrowRight,
   Zap,
+  Trophy,
+  BarChart3,
 } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
@@ -374,6 +376,8 @@ export default async function AdminDashboard() {
     { label: "Manage Events",     desc: "Edit or delete events",         href: "/admin/events",               icon: Calendar,     color: "#8b5cf6", iconBg: "rgba(139,92,246,0.10)"  },
     { label: "Event Requests",    desc: "Review student event requests", href: "/admin/event-requests",       icon: CheckCircle,  color: "#f59e0b", iconBg: "rgba(245,158,11,0.10)"  },
     { label: "Registrations",     desc: "All student sign-ups",          href: "/admin/registrations",        icon: Zap,          color: "#10b981", iconBg: "rgba(16,185,129,0.10)"  },
+    { label: "Analytics",         desc: "Performance trends & exports",   href: "/admin/analytics",            icon: BarChart3,    color: "#0ea5e9", iconBg: "rgba(14,165,233,0.10)"  },
+    { label: "Winner Posts",      desc: "Publish hackathon winners",     href: "/admin/hackathon-results",    icon: Trophy,       color: "#f97316", iconBg: "rgba(249,115,22,0.10)"  },
     { label: "Manage Users",      desc: "View & delete accounts",        href: "/admin/users",                icon: Users,        color: "#60a5fa", iconBg: "rgba(96,165,250,0.10)"  },
   ];
 

@@ -33,9 +33,11 @@ const stats = [
 export default function AnimatedHome({
   session,
   displayEvents,
+  winnerPosts,
 }: {
   session: Session | null;
   displayEvents: any[];
+  winnerPosts: any[];
 }) {
   return (
     <>
@@ -54,6 +56,50 @@ export default function AnimatedHome({
         {/* ── FEATURED EVENTS SHOWCASE ── */}
         {/*  */}
         <FeaturedEvents displayEvents={displayEvents} />
+
+        {winnerPosts.length > 0 && (
+          <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white border-y border-slate-100">
+            <div className="max-w-5xl mx-auto">
+              <div className="text-center mb-10">
+                <p className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-semibold uppercase tracking-wide">
+                  <Trophy className="w-3.5 h-3.5" />
+                  Winner Updates
+                </p>
+                <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mt-3">
+                  Recent Hackathon Winners
+                </h2>
+              </div>
+
+              <div className="space-y-4">
+                {winnerPosts.map((post) => (
+                  <article
+                    key={post.id}
+                    className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-wide text-orange-600">
+                      {post.event.title}
+                    </p>
+                    <p className="text-lg font-extrabold text-slate-900 mt-1">
+                      🏆 {post.winningTeamName}
+                    </p>
+                    <p className="text-sm text-slate-600 mt-1.5">
+                      {post.announcement}
+                    </p>
+                  </article>
+                ))}
+              </div>
+
+              <div className="mt-8 text-center">
+                <Link
+                  href="/hackathon-results"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-700"
+                >
+                  View all winner announcements <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
         {/* ── IMMERSIVE CTA BANNER ── */}
         <section className="py-24 px-4 sm:px-6 lg:px-8 relative z-10">
           <motion.div

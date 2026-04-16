@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { auth } from "@/auth";
 import AnimatedHome from "@/components/AnimatedHome";
@@ -27,16 +26,37 @@ async function getUpcomingEvents() {
   }
 }
 
+async function getRecentHackathonResults() {
+  try {
+    return await prisma.hackathonResultPost.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      include: {
+        event: {
+          select: { id: true, title: true, date: true },
+        },
+      },
+    });
+  } catch {
+    return [];
+  }
+}
+
 export default async function HomePage() {
-  const [session, featuredEvents, upcomingEvents] = await Promise.all([
+  const [session, featuredEvents, upcomingEvents, winnerPosts] = await Promise.all([
     auth(),
     getFeaturedEvents(),
     getUpcomingEvents(),
+    getRecentHackathonResults(),
   ]);
 
   const displayEvents = featuredEvents.length > 0 ? featuredEvents : upcomingEvents;
 
   return (
-    <AnimatedHome session={session} displayEvents={displayEvents} />
+    <AnimatedHome
+      session={session}
+      displayEvents={displayEvents}
+      winnerPosts={winnerPosts}
+    />
   );
 }

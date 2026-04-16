@@ -381,15 +381,17 @@ export default async function EventDetailPage({ params }: Props) {
     where: { id },
     include: {
       organizer: { select: { name: true, email: true, image: true } },
-      registrations: { select: { userId: true } },
+      registrations: {
+        where: { userId: session?.user?.id ?? "__no_user__" },
+        select: { userId: true, status: true },
+      },
     },
   });
 
   if (!event) notFound();
 
-  const isRegistered = session?.user?.id
-    ? event.registrations.some((r) => r.userId === session.user?.id)
-    : false;
+  const myRegistration = session?.user?.id ? event.registrations[0] ?? null : null;
+  const isRegistered = Boolean(myRegistration);
 
   const spotsLeft = event.maxParticipants
     ? event.maxParticipants - event.currentParticipants
@@ -397,7 +399,6 @@ export default async function EventDetailPage({ params }: Props) {
 
   const canRegister =
     event.status === "UPCOMING" &&
-    (spotsLeft === null || spotsLeft > 0) &&
     (!event.registrationDeadline ||
       new Date(event.registrationDeadline) > new Date());
 
@@ -645,6 +646,14 @@ export default async function EventDetailPage({ params }: Props) {
           border: 1.5px solid rgba(239,68,68,0.15);
           color: #ef4444; font-weight: 800; font-size: 0.875rem;
           text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        .ed-cta-waitlist {
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          padding: 14px; border-radius: 16px;
+          background: rgba(249,115,22,0.08);
+          border: 1.5px solid rgba(249,115,22,0.22);
+          color: #f97316; font-weight: 800; font-size: 0.875rem;
+          text-transform: uppercase; letter-spacing: 0.1em;
         }
       `}</style>
 
@@ -991,7 +1000,12 @@ export default async function EventDetailPage({ params }: Props) {
                 <div className="ed-divider" />
 
                 {/* CTA */}
-                {isRegistered ? (
+                {isRegistered && myRegistration?.status === "WAITLISTED" ? (
+                  <div className="ed-cta-waitlist">
+                    <Clock style={{ width: "18px", height: "18px" }} />
+                    You&apos;re Waitlisted
+                  </div>
+                ) : isRegistered ? (
                   <div className="ed-cta-registered">
                     <CheckCircle style={{ width: "18px", height: "18px" }} />
                     You&apos;re Registered!
@@ -1000,6 +1014,8 @@ export default async function EventDetailPage({ params }: Props) {
                   <RegisterButton
                     eventId={event.id}
                     isLoggedIn={!!session?.user}
+                    isHackathon={event.category === "HACKATHON"}
+                    isWaitlistOnly={spotsLeft === 0}
                   />
                 ) : event.status === "COMPLETED" ? (
                   <div className="ed-cta-closed">Event Ended</div>

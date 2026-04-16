@@ -46,10 +46,10 @@ export function Footer() {
   ];
 
   const socials = [
-    { icon: <Instagram className="w-4 h-4" />, href: "#", label: "Instagram" },
-    { icon: <Twitter className="w-4 h-4" />, href: "#", label: "Twitter" },
-    { icon: <Linkedin className="w-4 h-4" />, href: "#", label: "LinkedIn" },
-    { icon: <Github className="w-4 h-4" />, href: "#", label: "GitHub" },
+    { icon: <Instagram className="w-4 h-4" />, href: "https://github.com/deccan-verse-08/NowOnCampus", label: "Instagram" },
+    { icon: <Twitter className="w-4 h-4" />, href: "https://github.com/deccan-verse-08/NowOnCampus", label: "Twitter" },
+    { icon: <Linkedin className="w-4 h-4" />, href: "https://github.com/deccan-verse-08/NowOnCampus", label: "LinkedIn" },
+    { icon: <Github className="w-4 h-4" />, href: "https://github.com/deccan-verse-08/NowOnCampus", label: "GitHub" },
   ];
 
   return (
@@ -143,29 +143,6 @@ export function Footer() {
                 ))}
               </div>
 
-              {/* Mini stat pills */}
-              <div className="flex flex-wrap gap-2 mt-8">
-                {[
-                  ["500+", "Events"],
-                  ["120+", "Colleges"],
-                  ["50k+", "Students"],
-                ].map(([val, lbl]) => (
-                  <div
-                    key={lbl}
-                    className="px-3 py-1.5 rounded-full text-xs font-black"
-                    style={{
-                      background: "rgba(249,115,22,0.12)",
-                      color: "#f97316",
-                      border: "1px solid rgba(249,115,22,0.2)",
-                    }}
-                  >
-                    {val}{" "}
-                    <span style={{ color: "#64748b", fontWeight: 600 }}>
-                      {lbl}
-                    </span>
-                  </div>
-                ))}
-              </div>
             </div>
 
             {/* Event Categories — 3 cols */}
@@ -237,26 +214,6 @@ export function Footer() {
                   </li>
                 ))}
               </ul>
-
-              {/* CTA */}
-              <Link
-                href="/register"
-                className="mt-8 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-black uppercase tracking-widest transition-all duration-200"
-                style={{ background: "#f97316", color: "#fff" }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#ea6c0a";
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow =
-                    "0 10px 28px rgba(249,115,22,0.35)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#f97316";
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              >
-                Get Started <ArrowUpRight className="w-4 h-4" />
-              </Link>
             </div>
           </div>
 
