@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     if (!session?.user?.id) {
         return NextResponse.json({ error: "Please sign in to register" }, { status: 401 });
     }
+    const userId = session.user.id;
 
     try {
         const { eventId, teamName, teamParticipants } = await request.json() as {
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
         }
 
         const existing = await prisma.registration.findUnique({
-            where: { userId_eventId: { userId: session.user.id, eventId } },
+            where: { userId_eventId: { userId, eventId } },
             select: { id: true, status: true },
         });
 
@@ -109,7 +110,7 @@ export async function POST(request: Request) {
             } else {
                 await tx.registration.create({
                     data: {
-                        userId: session.user.id,
+                        userId,
                         eventId,
                         status: registrationStatus,
                         teamName: cleanTeamName || null,
@@ -132,7 +133,7 @@ export async function POST(request: Request) {
 
         // Send confirmation email (don't block response if it fails)
         const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
+            where: { id: userId },
             select: { email: true, name: true },
         });
 
