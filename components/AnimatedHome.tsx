@@ -24,11 +24,11 @@ import { FeaturedEvents } from "./FeaturedEvents";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 
-const stats = [
-  { label: "Events Hosted", value: "500+", icon: Calendar },
-  { label: "Students Participated", value: "10K+", icon: Users },
-  { label: "Prize Money Awarded", value: "₹50L+", icon: Trophy },
-];
+// const stats = [
+//   { label: "Events Hosted", value: "500+", icon: Calendar },
+//   { label: "Students Participated", value: "10K+", icon: Users },
+//   { label: "Prize Money Awarded", value: "₹50L+", icon: Trophy },
+// ];
 
 export default function AnimatedHome({
   session,
