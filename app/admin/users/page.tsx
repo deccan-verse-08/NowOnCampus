@@ -13,6 +13,7 @@ export default async function AdminUsersPage() {
 
   const admin = await prisma.user.findUnique({
     where: { id: session.user.id },
+    select: { role: true, isSuperAdmin: true },
   });
   if (admin?.role !== "ADMIN") redirect("/");
 
@@ -24,6 +25,7 @@ export default async function AdminUsersPage() {
       email: true,
       image: true,
       role: true,
+      isSuperAdmin: true,
       createdAt: true,
       _count: { select: { registrations: true } },
     },
@@ -95,6 +97,7 @@ export default async function AdminUsersPage() {
                   createdAt: u.createdAt.toISOString(),
                 }))}
                 currentUserId={session.user.id}
+                canCreateAdmins={admin.isSuperAdmin}
               />
             )}
           </div>

@@ -281,6 +281,7 @@
 import { useEffect, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import { Plus, X } from "lucide-react";
 
 type CalendarEvent = {
   id: string;
@@ -290,23 +291,47 @@ type CalendarEvent = {
   userStatus: string | null;
 };
 
+type CalendarNote = {
+  id: string;
+  date: string;
+  note: string;
+};
+
 const filters = [
   { value: "all", label: "All Events" },
   { value: "registered", label: "Registered" },
   { value: "attended", label: "Attended" },
 ];
 
+const getDateKey = (dateInput: string | Date) =>
+  new Date(dateInput).toISOString().split("T")[0];
+
+const getTodayDateInput = () => {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+  return local.toISOString().split("T")[0];
+};
+
 export default function CalendarComponent() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [notes, setNotes] = useState<CalendarNote[]>([]);
   const [filter, setFilter] = useState("all");
   const [mounted, setMounted] = useState(false);
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [noteDate, setNoteDate] = useState(getTodayDateInput());
+  const [noteText, setNoteText] = useState("");
+  const [noteError, setNoteError] = useState("");
+  const [savingNote, setSavingNote] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    fetch("/api/calendar")
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) setEvents(data);
+    Promise.all([fetch("/api/calendar"), fetch("/api/calendar/notes")])
+      .then(async ([eventsRes, notesRes]) => {
+        const eventsData = await eventsRes.json();
+        const notesData = notesRes.ok ? await notesRes.json() : [];
+
+        if (Array.isArray(eventsData)) setEvents(eventsData);
+        if (Array.isArray(notesData)) setNotes(notesData);
       })
       .catch((err) => console.error("Calendar fetch error:", err));
   }, []);
@@ -328,8 +353,74 @@ export default function CalendarComponent() {
       backgroundColor: color,
       borderColor: "transparent",
       textColor: "#ffffff",
+      extendedProps: { kind: "EVENT" },
     };
   });
+
+  const formattedNotes = notes.map((note) => {
+    const shortNote =
+      note.note.length > 24 ? `${note.note.slice(0, 24)}...` : note.note;
+
+    return {
+      id: `note-${note.id}`,
+      title: `Note: ${shortNote}`,
+      start: note.date,
+      allDay: true,
+      backgroundColor: "#2563eb",
+      borderColor: "transparent",
+      textColor: "#ffffff",
+      extendedProps: {
+        kind: "NOTE",
+        noteDate: getDateKey(note.date),
+        noteText: note.note,
+      },
+    };
+  });
+
+  const calendarItems = [...formattedEvents, ...formattedNotes];
+
+  const openNoteModal = (date = getTodayDateInput()) => {
+    const existingNote = notes.find((note) => getDateKey(note.date) === date);
+    setNoteDate(date);
+    setNoteText(existingNote?.note ?? "");
+    setNoteError("");
+    setShowNoteModal(true);
+  };
+
+  const handleSaveNote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingNote(true);
+    setNoteError("");
+
+    try {
+      const res = await fetch("/api/calendar/notes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ date: noteDate, note: noteText }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setNoteError(data.error || "Unable to save note.");
+        return;
+      }
+
+      setNotes((prev) => {
+        const withoutSameDate = prev.filter(
+          (item) => getDateKey(item.date) !== getDateKey(data.date),
+        );
+        return [...withoutSameDate, data].sort((a, b) =>
+          a.date.localeCompare(b.date),
+        );
+      });
+      setShowNoteModal(false);
+      setNoteText("");
+    } catch {
+      setNoteError("Something went wrong while saving.");
+    } finally {
+      setSavingNote(false);
+    }
+  };
 
   return (
     <>
@@ -612,16 +703,26 @@ export default function CalendarComponent() {
             </div>
 
             {/* Filter pills */}
-            <div className="cal-filters">
-              {filters.map((f) => (
-                <button
-                  key={f.value}
-                  onClick={() => setFilter(f.value)}
-                  className={`cal-pill ${filter === f.value ? "cal-pill-active" : ""}`}
-                >
-                  {f.label}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={() => openNoteModal()}
+                className="inline-flex items-center gap-2 rounded-xl border border-white/40 bg-white/15 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.12em] text-white hover:bg-white/25 transition-colors"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Add Note
+              </button>
+
+              <div className="cal-filters">
+                {filters.map((f) => (
+                  <button
+                    key={f.value}
+                    onClick={() => setFilter(f.value)}
+                    className={`cal-pill ${filter === f.value ? "cal-pill-active" : ""}`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -639,7 +740,7 @@ export default function CalendarComponent() {
             <FullCalendar
               plugins={[dayGridPlugin]}
               initialView="dayGridMonth"
-              events={formattedEvents}
+              events={calendarItems}
               height="auto"
               dayMaxEvents={3}
               headerToolbar={{
@@ -648,6 +749,14 @@ export default function CalendarComponent() {
                 right: "",
               }}
               eventClick={(info) => {
+                const kind = info.event.extendedProps.kind as string | undefined;
+                if (kind === "NOTE") {
+                  const selectedDate = info.event.extendedProps.noteDate as
+                    | string
+                    | undefined;
+                  openNoteModal(selectedDate ?? getTodayDateInput());
+                  return;
+                }
                 window.location.href = `/events/${info.event.id}`;
               }}
             />
@@ -660,6 +769,7 @@ export default function CalendarComponent() {
             { color: "#f97316", label: "Registered" },
             { color: "#10b981", label: "Upcoming" },
             { color: "#94a3b8", label: "Completed" },
+            { color: "#2563eb", label: "Notes" },
           ].map(({ color, label }) => (
             <div key={label} className="cal-legend-item">
               <span className="cal-dot" style={{ background: color }} />
@@ -668,6 +778,76 @@ export default function CalendarComponent() {
           ))}
         </div>
       </div>
+
+      {showNoteModal && (
+        <div className="fixed inset-0 z-[120] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white border border-slate-200 shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Add Calendar Note</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Save one note per date.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowNoteModal(false)}
+                className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"
+                aria-label="Close note modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveNote} className="p-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={noteDate}
+                  onChange={(e) => setNoteDate(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                  Note
+                </label>
+                <textarea
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  rows={4}
+                  placeholder="Write your note for this date..."
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  required
+                />
+              </div>
+
+              {noteError && <p className="text-sm text-red-600">{noteError}</p>}
+
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowNoteModal(false)}
+                  className="px-4 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-100"
+                  disabled={savingNote}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingNote}
+                  className="px-5 py-2.5 rounded-lg text-sm font-semibold bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white"
+                >
+                  {savingNote ? "Saving..." : "Save Note"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </>
   );
 }

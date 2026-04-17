@@ -655,6 +655,27 @@ export default async function EventDetailPage({ params }: Props) {
           color: #f97316; font-weight: 800; font-size: 0.875rem;
           text-transform: uppercase; letter-spacing: 0.1em;
         }
+        .ed-cta-view-teams {
+          display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+          margin-top: 10px;
+          margin-left: auto;
+          padding: 14px;
+          border-radius: 16px;
+          background: #0f172a;
+          border: 1.5px solid #0f172a;
+          color: #ffffff;
+          font-weight: 800;
+          font-size: 0.8125rem;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          transition: background 0.15s, border-color 0.15s, transform 0.15s;
+          text-decoration: none;
+        }
+        .ed-cta-view-teams:hover {
+          background: #1e293b;
+          border-color: #1e293b;
+          transform: translateY(-1px);
+        }
       `}</style>
 
       <Navbar />
@@ -1024,6 +1045,11 @@ export default async function EventDetailPage({ params }: Props) {
                 ) : (
                   <div className="ed-cta-closed">Registration Closed</div>
                 )}
+
+                <Link href={`/events/${event.id}/registered-teams`} className="ed-cta-view-teams">
+                  View registered teams
+                  <ArrowRight style={{ width: "16px", height: "16px" }} />
+                </Link>
               </div>
             </div>
           </div>

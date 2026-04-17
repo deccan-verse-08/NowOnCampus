@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Trash2, ShieldCheck, User, Loader2 } from "lucide-react";
+import { Trash2, ShieldCheck, User, Loader2, UserPlus } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
@@ -12,6 +11,7 @@ interface UserRow {
   email: string;
   image: string | null;
   role: string;
+  isSuperAdmin: boolean;
   createdAt: string;
   _count: { registrations: number };
 }
@@ -19,12 +19,20 @@ interface UserRow {
 export function UsersTable({
   initialUsers,
   currentUserId,
+  canCreateAdmins,
 }: {
   initialUsers: UserRow[];
   currentUserId: string;
+  canCreateAdmins: boolean;
 }) {
   const [users, setUsers] = useState(initialUsers);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [adminName, setAdminName] = useState("");
+  const [adminEmail, setAdminEmail] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
+  const [creatingAdmin, setCreatingAdmin] = useState(false);
+  const [adminFormError, setAdminFormError] = useState("");
+  const [adminFormSuccess, setAdminFormSuccess] = useState("");
 
   const handleDelete = async (id: string, name: string) => {
     if (
@@ -50,9 +58,98 @@ export function UsersTable({
     }
   };
 
+  const handleCreateAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingAdmin(true);
+    setAdminFormError("");
+    setAdminFormSuccess("");
+
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: adminName,
+          email: adminEmail,
+          password: adminPassword,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setAdminFormError(data.error || "Failed to create admin account.");
+        return;
+      }
+
+      const createdUser: UserRow = {
+        ...data.user,
+        createdAt: new Date(data.user.createdAt).toISOString(),
+      };
+
+      setUsers((prev) => [createdUser, ...prev]);
+      setAdminName("");
+      setAdminEmail("");
+      setAdminPassword("");
+      setAdminFormSuccess("Admin account created successfully.");
+    } catch {
+      setAdminFormError("Something went wrong while creating admin.");
+    } finally {
+      setCreatingAdmin(false);
+    }
+  };
+
   return (
     <>
       <Navbar />
+      {canCreateAdmins && (
+        <div className="border-b border-slate-200 bg-slate-50 px-5 py-5">
+          <div className="mb-3 flex items-center gap-2">
+            <UserPlus className="w-4 h-4 text-blue-600" />
+            <h3 className="text-sm font-bold text-slate-900">Create Admin</h3>
+          </div>
+
+          <form onSubmit={handleCreateAdmin} className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <input
+              type="text"
+              placeholder="Full name"
+              value={adminName}
+              onChange={(e) => setAdminName(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+            <input
+              type="email"
+              placeholder="Email address"
+              value={adminEmail}
+              onChange={(e) => setAdminEmail(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Temporary password"
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              minLength={6}
+              required
+            />
+            <button
+              type="submit"
+              disabled={creatingAdmin}
+              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:bg-blue-400"
+            >
+              {creatingAdmin ? "Creating..." : "Create Admin"}
+            </button>
+          </form>
+
+          {adminFormError && <p className="mt-2 text-sm text-red-600">{adminFormError}</p>}
+          {adminFormSuccess && (
+            <p className="mt-2 text-sm text-emerald-600">{adminFormSuccess}</p>
+          )}
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <table className="w-full min-w-[650px]">
           <thead>
@@ -104,7 +201,9 @@ export function UsersTable({
                 <td className="px-5 py-3.5">
                   <span
                     className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${
-                      u.role === "ADMIN"
+                      u.isSuperAdmin
+                        ? "bg-rose-100 text-rose-700"
+                        : u.role === "ADMIN"
                         ? "bg-purple-100 text-purple-700"
                         : "bg-blue-100 text-blue-700"
                     }`}
@@ -114,7 +213,7 @@ export function UsersTable({
                     ) : (
                       <User className="w-3 h-3" />
                     )}
-                    {u.role}
+                    {u.isSuperAdmin ? "SUPERADMIN" : u.role}
                   </span>
                 </td>
 
@@ -139,6 +238,8 @@ export function UsersTable({
                 <td className="px-5 py-3.5">
                   {u.id === currentUserId ? (
                     <span className="text-xs text-slate-400 italic">You</span>
+                  ) : u.isSuperAdmin ? (
+                    <span className="text-xs text-slate-400 italic">Protected</span>
                   ) : (
                     <button
                       onClick={() => handleDelete(u.id, u.name || u.email)}

@@ -18,6 +18,22 @@ export async function DELETE(
         return NextResponse.json({ error: "You cannot delete your own account." }, { status: 400 });
     }
 
+    const targetUser = await prisma.user.findUnique({
+        where: { id },
+        select: { isSuperAdmin: true },
+    });
+
+    if (!targetUser) {
+        return NextResponse.json({ error: "User not found." }, { status: 404 });
+    }
+
+    if (targetUser.isSuperAdmin) {
+        return NextResponse.json(
+            { error: "Superadmin accounts cannot be deleted." },
+            { status: 403 },
+        );
+    }
+
     // Get all registrations for this user to know which events to decrement
     const registrations = await prisma.registration.findMany({
         where: { userId: id },

@@ -72,7 +72,7 @@ Push the Prisma schema to your configured database:
 npx prisma db push
 \`\`\`
 
-*(Optional)* Seed the database with an initial Admin user if required, or simply register a new account on the frontend and manually change the role to `"ADMIN"` in your database viewer.
+*(Optional)* Seed the database with an initial Admin user if required, or simply register a new account on the frontend and manually change the role to `"ADMIN"` in your database viewer. To allow admin creation from the Admin UI, set `isSuperAdmin` to `true` for at least one admin user.
 
 ### 5. Run the Local Development Server
 \`\`\`bash
