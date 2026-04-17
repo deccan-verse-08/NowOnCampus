@@ -160,22 +160,22 @@ export function StorySection() {
         >
           {[
             {
-              value: "500+",
-              label: "Events Listed",
+              value: "25+",
+              label: "Active Clubs",
               bg: "#ecfccb",
               text: "#3f6212",
               border: "#bef264",
             },
             {
               value: "120+",
-              label: "Colleges",
+              label: "Annual Events",
               bg: "#fef3c7",
               text: "#92400e",
               border: "#fcd34d",
             },
             {
-              value: "50k+",
-              label: "Students",
+              value: "2500+",
+              label: "Active Students",
               bg: "#fff7ed",
               text: "#c2410c",
               border: "#fdba74",
