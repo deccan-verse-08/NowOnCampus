@@ -150,6 +150,68 @@ export function StorySection() {
           directly to your feed.
         </motion.p>
 
+<<<<<<< HEAD
+=======
+        {/* --- 3 stat pills --- */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, delay: 0.32 }}
+          className="flex flex-wrap justify-center gap-4"
+        >
+          {[
+            {
+              value: "25+",
+              label: "Active Clubs",
+              bg: "#ecfccb",
+              text: "#3f6212",
+              border: "#bef264",
+            },
+            {
+              value: "120+",
+              label: "Annual Events",
+              bg: "#fef3c7",
+              text: "#92400e",
+              border: "#fcd34d",
+            },
+            {
+              value: "2500+",
+              label: "Active Students",
+              bg: "#fff7ed",
+              text: "#c2410c",
+              border: "#fdba74",
+            },
+          ].map((stat, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              whileHover={{ y: -5, scale: 1.02 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: 0.38 + i * 0.08 }}
+              className="px-8 py-5 rounded-[2rem] transition-all duration-300"
+              style={{
+                background: stat.bg,
+                border: `1px solid ${stat.border}`,
+              }}
+            >
+              <div
+                className="text-4xl font-black leading-none"
+                style={{ color: stat.text, letterSpacing: "-0.02em" }}
+              >
+                {stat.value}
+              </div>
+              <div
+                className="text-[10px] font-bold uppercase tracking-[0.2em] mt-2"
+                style={{ color: stat.text, opacity: 0.8 }}
+              >
+                {stat.label}
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+>>>>>>> dc45fee61544b30486ba386821b5f7e225abe47f
       </div>
     </section>
   );
