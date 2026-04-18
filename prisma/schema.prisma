@@ -119,6 +119,7 @@ model Registration {
   teamName     String?
   status       RegistrationStatus @default(CONFIRMED)
   registeredAt DateTime @default(now())
+  reminderSentAt DateTime?
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)

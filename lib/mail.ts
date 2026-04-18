@@ -189,6 +189,104 @@ export async function sendEventConfirmationEmail(
   });
 }
 
+export async function sendEventReminderEmail(
+  userEmail: string,
+  userName: string,
+  event: EventDetails
+) {
+  const emoji = categoryEmoji[event.category] || "📋";
+  const eventUrl = `${getBaseUrl()}/events`;
+
+  const html = `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Reminder</title>
+  </head>
+  <body style="margin:0;padding:0;background:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 16px;">
+      <tr><td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+          <tr><td style="background:linear-gradient(135deg,#ea580c,#f97316);border-radius:16px 16px 0 0;padding:36px 32px;text-align:center;">
+            <div style="display:inline-flex;align-items:center;gap:10px;margin-bottom:16px;">
+              <span style="background:white;border-radius:12px;padding:8px 12px;font-size:22px;font-weight:900;color:#ea580c;">NOC</span>
+              <span style="color:white;font-size:20px;font-weight:700;">NowOnCampus</span>
+            </div>
+            <div style="font-size:40px;margin:8px 0;">⏰</div>
+            <h1 style="color:white;font-size:26px;font-weight:800;margin:0 0 8px;">Event starts in 1 day</h1>
+            <p style="color:#ffedd5;font-size:15px;margin:0;">You're registered — here's your reminder.</p>
+          </td></tr>
+
+          <tr><td style="background:white;padding:32px;">
+            <p style="color:#374151;font-size:16px;margin:0 0 20px;">Hi <strong>${userName}</strong>,</p>
+            <p style="color:#374151;font-size:15px;margin:0 0 24px;">
+              This is a reminder that your registered event is starting tomorrow.
+            </p>
+
+            <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:24px;margin-bottom:24px;">
+              <h2 style="color:#9a3412;font-size:20px;font-weight:800;margin:0 0 16px;">${event.title}</h2>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid #ffedd5;">
+                    <span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Category</span><br>
+                    <span style="color:#9a3412;font-size:15px;font-weight:600;">${emoji} ${event.category}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid #ffedd5;">
+                    <span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">📅 Date &amp; Time</span><br>
+                    <span style="color:#9a3412;font-size:15px;font-weight:600;">${formatDate(event.date)}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 0;border-bottom:1px solid #ffedd5;">
+                    <span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">📍 Venue</span><br>
+                    <span style="color:#9a3412;font-size:15px;font-weight:600;">${event.venue}</span>
+                  </td>
+                </tr>
+                ${event.endDate ? `
+                <tr>
+                  <td style="padding:8px 0;">
+                    <span style="color:#6b7280;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;">🏁 Ends</span><br>
+                    <span style="color:#9a3412;font-size:15px;font-weight:600;">${formatDate(event.endDate)}</span>
+                  </td>
+                </tr>` : ""}
+              </table>
+            </div>
+
+            <div style="text-align:center;margin-bottom:24px;">
+              <a href="${eventUrl}" style="display:inline-block;background:#ea580c;color:white;font-size:15px;font-weight:700;text-decoration:none;padding:14px 32px;border-radius:10px;">
+                View Events →
+              </a>
+            </div>
+
+            <p style="color:#6b7280;font-size:13px;margin:0;">
+              Please arrive on time and carry any required materials.
+            </p>
+          </td></tr>
+
+          <tr><td style="background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 16px 16px;padding:20px 32px;text-align:center;">
+            <p style="color:#94a3b8;font-size:12px;margin:0;">
+              &copy; 2025 NowOnCampus. This is an automated reminder.
+            </p>
+          </td></tr>
+        </table>
+      </td></tr>
+    </table>
+  </body>
+  </html>
+  `;
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || process.env.GMAIL_USER,
+    to: userEmail,
+    subject: `⏰ Reminder: ${event.title} starts tomorrow — NowOnCampus`,
+    html,
+  });
+}
+
 // ── Password Reset Email ──────────────────────────────────────────────────────
 
 export async function sendPasswordResetEmail(userEmail: string, userName: string, resetToken: string) {

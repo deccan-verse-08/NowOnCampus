@@ -101,6 +101,7 @@ export async function POST(request: Request) {
                     where: { id: existing.id },
                     data: {
                         status: registrationStatus,
+                        reminderSentAt: null,
                         teamName: cleanTeamName || null,
                         teamParticipants: isHackathon
                             ? { deleteMany: {}, create: normalizedParticipants }
@@ -113,6 +114,7 @@ export async function POST(request: Request) {
                         userId,
                         eventId,
                         status: registrationStatus,
+                        reminderSentAt: null,
                         teamName: cleanTeamName || null,
                         teamParticipants: isHackathon
                             ? {
